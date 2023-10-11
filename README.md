@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <div align="center">
   <a href="https://github.com/colyseus/colyseus">
     <img src="https://github.com/colyseus/colyseus/blob/master/media/header.png?raw=true" />
@@ -39,3 +40,6 @@ Open [http://localhost:2567](http://localhost:2567) in your browser.
 ## License
 
 MIT
+=======
+# Snake
+>>>>>>> 2d7db08f890c4c5b84b7b467d975b40254b4a093
