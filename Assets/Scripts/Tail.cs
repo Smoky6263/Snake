@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -11,9 +12,25 @@ public class Tail : MonoBehaviour
     private List<Quaternion> _rotationHistory = new List<Quaternion>();
     private Transform _head;
     private float _snakeSpeed = 2f;
+    private int _playerLayer;
+    private bool _isPlayer;
+    private void SetPlayerLayer(GameObject gameObject)
+        {
+        
+            gameObject.layer = _playerLayer;
+            var childrens = GetComponentsInChildren<Transform>();
+            for (int i = 0; i < childrens.Length; i++)
+            {
+                childrens[i].gameObject.layer = _playerLayer;
+            }
+        }
 
-    public void Init(Transform head, float speed, int detailCount)
+    public void Init(Transform head, float speed, int detailCount, int playerLayer, bool isPlayer)
     {
+        _playerLayer = playerLayer;
+        _isPlayer = isPlayer;
+
+        if (isPlayer) SetPlayerLayer(gameObject);
         _snakeSpeed = speed;
         _head = head;
 
@@ -52,6 +69,8 @@ public class Tail : MonoBehaviour
         Vector3 position = _details[_details.Count -1].position;
         Quaternion rotation = _details[_details.Count - 1].rotation;
         Transform detail = Instantiate(_detailPrefab, position, rotation);
+        if (_isPlayer) SetPlayerLayer(detail.gameObject);
+        
         _details.Insert(0, detail);
         _positionHistory.Add(position);
         _rotationHistory.Add(rotation);
@@ -96,7 +115,25 @@ public class Tail : MonoBehaviour
             _details[i].rotation = Quaternion.Lerp(_rotationHistory[i + 1], _rotationHistory[i], percent);
         }
     }
+    public DetailPositions GetDetailPositions()
+    {
+        int detailsCount = _details.Count;
 
+        DetailPosition[] ds = new DetailPosition[detailsCount];
+
+        for (int i = 0; i < detailsCount; i++)
+        {
+            ds[i] = new DetailPosition
+            {
+                x = _details[i].position.x,
+                z = _details[i].position.z,
+            };
+        }
+
+        DetailPositions detailPositions = new DetailPositions { ds = ds };
+        
+        return detailPositions;
+    }
     public void Destroy()
     {
         for (int i = 0; i < _details.Count; i++)
@@ -104,4 +141,17 @@ public class Tail : MonoBehaviour
             Destroy(_details[i].gameObject);
         }
     }
+}
+
+[System.Serializable]
+public struct DetailPosition
+{
+    public float x;
+    public float z;
+}
+[System.Serializable]
+public struct DetailPositions
+{
+    public string id;
+    public DetailPosition[] ds;
 }

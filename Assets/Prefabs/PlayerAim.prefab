@@ -128,5 +128,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 19a62489bbcfe5e498a530c3533f2448, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _rotateSpeed: 90
+  _collisionLayer:
+    serializedVersion: 2
+    m_Bits: 55
+  _rotateSpeed: 360
   _overlapRadius: 0.5

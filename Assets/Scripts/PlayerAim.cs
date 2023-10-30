@@ -2,6 +2,7 @@ using UnityEngine;
 
 public class PlayerAim : MonoBehaviour
 {
+    [SerializeField] private LayerMask _collisionLayer;
     [SerializeField] private float _rotateSpeed = 90f;
     [SerializeField] private float _overlapRadius = 90f;
     private Transform _snakeHead;
@@ -17,6 +18,12 @@ public class PlayerAim : MonoBehaviour
     {
         Rotate();
         Move();
+        CheckOutOfMap();
+    }
+
+    private void CheckOutOfMap()
+    {
+        if (Mathf.Abs(_snakeHead.position.x) > 128 || Mathf.Abs(_snakeHead.position.z) > 128) GameOver();
     }
 
     private void FixedUpdate()
@@ -47,7 +54,7 @@ public class PlayerAim : MonoBehaviour
     private void CheckCollision() 
     {
         Vector3 position = transform.position;
-        Collider[] colliders = Physics.OverlapSphere(_snakeHead.position, _overlapRadius);
+        Collider[] colliders = Physics.OverlapSphere(_snakeHead.position, _overlapRadius, _collisionLayer);
 
         for (int i = 0; i < colliders.Length; i++)
         {
@@ -55,6 +62,30 @@ public class PlayerAim : MonoBehaviour
             {
                 apple.Collect();
             }
+            else
+            {
+                if (colliders[i].GetComponent<Snake>())
+                {
+                    Transform enemy = colliders[i].transform;
+                    float playerAngle = Vector3.Angle(enemy.position - _snakeHead.position, transform.forward);
+                    float enemyAngle = Vector3.Angle(_snakeHead.position - enemy.position, enemy.forward);
+
+                    if (playerAngle < enemyAngle + 5)
+                    {
+                        GameOver();
+                    }
+                }
+                else 
+                {
+                    GameOver();
+                }
+            }
         }
+    }
+
+    private void GameOver()
+    {
+        FindObjectOfType<Controller>().Destroy();
+        Destroy(gameObject);
     }
 }

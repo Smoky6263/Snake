@@ -13,7 +13,7 @@ GameObject:
   m_Layer: 0
   m_Name: Head
   m_TagString: Untagged
-  m_Icon: {fileID: 0}
+  m_Icon: {fileID: 6519382022992737161, guid: 0000000000000000d000000000000000, type: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
@@ -56,6 +56,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5073828328393021227}
   - component: {fileID: 5073828328393021220}
+  - component: {fileID: 7945207196057210552}
   m_Layer: 0
   m_Name: Snake
   m_TagString: Untagged
@@ -91,9 +92,23 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f727f5f31c308bc4783d4d527629b576, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _playerLayer: 3
   _tailPrefab: {fileID: 3366369204426700871, guid: 2b0e8088fba944a4baccc8b83d29f171, type: 3}
-  <_head>k__BackingField: {fileID: 5073828328393021227}
-  _speed: 6
+  <_head>k__BackingField: {fileID: 5073828326512447779}
+  _speed: 12
+--- !u!114 &7945207196057210552
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5073828328393021226}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 96c2c001ddbc120418ed1c798f4348f7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _deathParticle: {fileID: 6337447475170569117, guid: f18bc8e86746677419b9e0340a6aa844, type: 3}
 --- !u!1001 &7829943547088096955
 PrefabInstance:
   m_ObjectHideFlags: 0

@@ -78,6 +78,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _cursor: {fileID: 2774510977447973291}
+  _cameraOffsetY: 15
 --- !u!1 &2774510978157171641
 GameObject:
   m_ObjectHideFlags: 0

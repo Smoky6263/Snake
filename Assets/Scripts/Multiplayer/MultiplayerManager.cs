@@ -1,5 +1,7 @@
 using Colyseus;
 using System.Collections.Generic;
+using System.Linq;
+using TMPro;
 using Unity.VisualScripting;
 using UnityEngine;
 
@@ -19,7 +21,12 @@ public class MultiplayerManager : ColyseusManager<MultiplayerManager>
 
     private async void Connection()
     {
-        _room = await client.JoinOrCreate<State>(GameRoomName);
+        Dictionary<string, object> data = new Dictionary<string, object>()
+        {
+            { "login", PlayerSettings.Instance.Login }
+        };
+
+        _room = await client.JoinOrCreate<State>(GameRoomName, data);
         _room.OnStateChange += Onchange;
     }
 
@@ -52,10 +59,25 @@ public class MultiplayerManager : ColyseusManager<MultiplayerManager>
 
     public void LeaveRoom()
     {
+        _room?.State.apples.Clear();
+        _room?.State.players.Clear();
+        _leaders?.Clear();
+
+        _room.State.players.OnAdd -= CreateEnemy;
+        _room.State.players.OnRemove -= RemoveEnemy;
+
+        _room.State.apples.OnAdd -= (key, value) => CreateApple(value);
+        _room.State.apples.OnRemove -= RemoveApple;
+
         _room?.Leave();
     }
 
     public void SendMessage(string key, Dictionary<string, object> data)
+    {
+        _room.Send(key, data);
+    }
+
+    public void SendMessage(string key, string data)
     {
         _room.Send(key, data);
     }
@@ -72,13 +94,15 @@ public class MultiplayerManager : ColyseusManager<MultiplayerManager>
         Quaternion rotation = Quaternion.identity;
 
         Snake snake = Instantiate(_snakePrefab, position, rotation);
-        snake.Init(player.d);
+        snake.Init(player.d, true);
 
         PlayerAim aim = Instantiate(_playerAim, position, rotation);
         aim.Init(snake._head, snake.Speed);
 
         Controller controller = Instantiate(_controllerPrefab);
-        controller.Init(aim, player, snake);
+        controller.Init(_room.SessionId, aim, player, snake);
+
+        AddLeader(_room.SessionId, player);
     }
     #endregion
 
@@ -92,13 +116,17 @@ public class MultiplayerManager : ColyseusManager<MultiplayerManager>
         snake.Init(player.d);
 
         EnemyController enemy = snake.AddComponent<EnemyController>();
-        enemy.Init(player, snake);
+        enemy.Init(key, player, snake);
 
         _enemies.Add(key, enemy);
+
+        AddLeader(key, player);
     }
     private void RemoveEnemy(string key, Player value)
     {
-        if(_enemies.ContainsKey(key) == false)
+        RemoveLeader(key);
+
+        if (_enemies.ContainsKey(key) == false)
         {
             Debug.Log("ѕопытка уничтожени€ enemy, которого нет в словаре");
             return;
@@ -128,6 +156,62 @@ public class MultiplayerManager : ColyseusManager<MultiplayerManager>
         Apple apple = _apples[vector2Float];
         _apples.Remove(vector2Float);
         apple.Destroy();
+    }
+    #endregion
+
+    #region LeaderBoard
+    private class LoginScorePair
+    {
+        public string login;
+        public float score;
+    }
+
+    [SerializeField] private TMP_Text _text;
+
+    Dictionary<string, LoginScorePair> _leaders = new Dictionary<string, LoginScorePair>();
+
+    private void AddLeader(string sessionID, Player player)
+    {
+        if (_leaders.ContainsKey(sessionID)) return;
+
+        _leaders.Add(sessionID, new LoginScorePair 
+        {
+            login = player.login,
+            score = player.score
+        });
+
+        UpdateBoard();
+    }
+
+    private void RemoveLeader(string sessionID) 
+    {
+        if (_leaders.ContainsKey(sessionID) == false) return;
+        _leaders.Remove(sessionID);
+
+        UpdateBoard();
+    }
+
+    public void UpdateScore(string sessionID, int score) 
+    {
+        if (_leaders.ContainsKey(sessionID) == false) return;
+
+        _leaders[sessionID].score = score;
+        UpdateBoard();
+    }
+
+    private void UpdateBoard() 
+    {
+        int topCount = Mathf.Clamp(_leaders.Count, 0, 8);
+        var top8 = _leaders.OrderByDescending( pair => pair.Value.score).Take(topCount);
+
+        string text = "";
+        int i = 1;
+        foreach ( var item in top8 ) 
+        {
+            text += $"{i}. {item.Value.login}: {item.Value.score}\n";
+        }
+
+        _text.text = text;
     }
     #endregion
 }

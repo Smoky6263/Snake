@@ -1,6 +1,7 @@
 using Colyseus.Schema;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 
 public class Controller : MonoBehaviour
 {
@@ -11,19 +12,22 @@ public class Controller : MonoBehaviour
     private PlayerAim _playerAim;
     private Snake _snake;
     private Camera _camera;
+    private string _clientID;
 
     private Plane _plane;
-    public void Init(PlayerAim aim, Player player, Snake snake)
+    public void Init(string clientID, PlayerAim aim, Player player, Snake snake)
     {
         _multiplayerManager = MultiplayerManager.Instance;
 
+        _clientID = clientID;
         _playerAim = aim;
         _player = player;
         _snake = snake;
         _camera = Camera.main;
         _plane = new Plane(Vector3.up, Vector3.zero);
 
-        _snake.gameObject.AddComponent<CameraManager>().Init(_cameraOffsetY);
+        _camera.transform.parent = _snake.transform;
+        _camera.transform.localPosition = Vector3.up * _cameraOffsetY;
 
         _player.OnChange += OnChange;
     }
@@ -71,6 +75,10 @@ public class Controller : MonoBehaviour
                     _snake.SetDetailCount((byte)changes[i].Value);
                     break;
 
+                case "score":
+                    _multiplayerManager.UpdateScore(_clientID, (ushort)changes[i].Value);
+                    break;
+
                 default:
                     Debug.Log("Не обрабатывается изменение поля:" + changes[i].Field);
                     break;
@@ -82,8 +90,14 @@ public class Controller : MonoBehaviour
 
     public void Destroy()
     {
+        CameraScript cameraScript = _camera.GetComponent<CameraScript>();
+        cameraScript.ChangeCamera();
+        _camera.transform.parent = null;
         _player.OnChange -= OnChange;
-        _snake?.Destroy();
+
+        _snake.Destroy(_clientID);
+
+        Destroy(gameObject);
     }
     private void MoveCursos()
     {

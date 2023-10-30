@@ -10,10 +10,10 @@ public class Apple : MonoBehaviour
     {
         _apple = apple;
 
-        _apple.OnChange += OnCHange;
+        _apple.OnChange += OnChange;
     }
 
-    private void OnCHange(List<DataChange> changes)
+    private void OnChange(List<DataChange> changes)
     {
         Vector3 position = transform.position;
 
@@ -38,7 +38,7 @@ public class Apple : MonoBehaviour
 
     public void Destroy()
     {
-        if(_apple != null) _apple.OnChange -= OnCHange;
+        if(_apple != null) _apple.OnChange -= OnChange;
         Destroy(gameObject);
     }
 
