@@ -13,10 +13,14 @@ public class MultiplayerManager : ColyseusManager<MultiplayerManager>
     private ColyseusRoom<State> _room;
     protected override void Awake()
     {
-        base.Awake();
-        DontDestroyOnLoad(gameObject);
-        InitializeClient();
-        Connection();
+        if (Instance == null)
+        {
+            base.Awake();
+            DontDestroyOnLoad(gameObject);
+            InitializeClient();
+        }
+
+        Instance.Connection();
     }
 
     private async void Connection()
@@ -59,10 +63,6 @@ public class MultiplayerManager : ColyseusManager<MultiplayerManager>
 
     public void LeaveRoom()
     {
-        _room?.State.apples.Clear();
-        _room?.State.players.Clear();
-        _leaders?.Clear();
-
         _room.State.players.OnAdd -= CreateEnemy;
         _room.State.players.OnRemove -= RemoveEnemy;
 
@@ -174,7 +174,7 @@ public class MultiplayerManager : ColyseusManager<MultiplayerManager>
     {
         if (_leaders.ContainsKey(sessionID)) return;
 
-        _leaders.Add(sessionID, new LoginScorePair 
+        _leaders.Add(sessionID, new LoginScorePair
         {
             login = player.login,
             score = player.score
@@ -183,7 +183,7 @@ public class MultiplayerManager : ColyseusManager<MultiplayerManager>
         UpdateBoard();
     }
 
-    private void RemoveLeader(string sessionID) 
+    private void RemoveLeader(string sessionID)
     {
         if (_leaders.ContainsKey(sessionID) == false) return;
         _leaders.Remove(sessionID);
@@ -191,7 +191,7 @@ public class MultiplayerManager : ColyseusManager<MultiplayerManager>
         UpdateBoard();
     }
 
-    public void UpdateScore(string sessionID, int score) 
+    public void UpdateScore(string sessionID, int score)
     {
         if (_leaders.ContainsKey(sessionID) == false) return;
 
@@ -199,14 +199,14 @@ public class MultiplayerManager : ColyseusManager<MultiplayerManager>
         UpdateBoard();
     }
 
-    private void UpdateBoard() 
+    private void UpdateBoard()
     {
         int topCount = Mathf.Clamp(_leaders.Count, 0, 8);
-        var top8 = _leaders.OrderByDescending( pair => pair.Value.score).Take(topCount);
+        var top8 = _leaders.OrderByDescending(pair => pair.Value.score).Take(topCount);
 
         string text = "";
         int i = 1;
-        foreach ( var item in top8 ) 
+        foreach (var item in top8)
         {
             text += $"{i}. {item.Value.login}: {item.Value.score}\n";
         }
